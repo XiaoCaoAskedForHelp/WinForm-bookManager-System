@@ -1,0 +1,113 @@
+﻿登录
+退出
+借阅
+还书
+图书查询（）
+
+出版社：编号，名称，类别（1大学，2其他），购书数量
+图书信息：书号，书名，作者，出版社，首版年月、种类（1.计算机 2.管理 3工具书 4 其他）、单价、数量、备注
+借阅查询:书号、借阅日期、借书考号、数量、还书日期
+
+create database 图书管理系统
+go
+use 图书管理系统
+go
+
+create table 读者信息(
+卡号 varchar(20) not null,
+姓名 nvarchar(20) not null,
+密码 varchar(50) not null,
+constraint pk_读者信息 primary key(卡号) 
+)
+go
+
+create table 出版社类别(
+编号 int not null,
+名称 nvarchar(20) not null,
+constraint pk_出版社类别 primary key (编号)
+)
+go
+
+--N将后面解释为unicode字符
+insert 出版社类别 values(1,N'学术教育类')
+insert 出版社类别 values(2,N'文史社科古籍类')
+insert 出版社类别 values(3,N'文学类')
+insert 出版社类别 values(4,N'经济管理类')
+insert 出版社类别 values(5,N'科学技术类')
+insert 出版社类别 values(6,N'法律类')
+insert 出版社类别 values(7,N'其他')
+go
+
+create table 出版社(
+编号 int identity(1,1) not null,
+名称 nvarchar(100) not null,
+类别编号 int not null,
+购书数量 int not null,
+constraint pk_出版社 primary key(编号)
+)
+go
+
+alter table 出版社 add foreign key(类别编号) references 出版社类别(编号)
+go
+
+create table 图书种类(
+编号 int not null,
+名称 nvarchar(20) not null,
+constraint pk_图书种类 primary key (编号)
+)
+go
+
+insert 图书种类 values(1,N'计算机')
+insert 图书种类 values(2,N'管理')
+insert 图书种类 values(3,N'金融')
+insert 图书种类 values(4,N'科技')
+insert 图书种类 values(5,N'法律')
+insert 图书种类 values(6,N'文学')
+insert 图书种类 values(7,N'教育')
+insert 图书种类 values(8,N'其他')
+go
+
+--char是定长的，索引效率级高
+--nvarchar(n)包含 n 个字符的可变长度 Unicode 字符数据。
+--varchar(n)长度为 n 个字节的可变长度且非 Unicode 的字符数据。汉字——解决字符集这种不兼容
+create table 图书(
+书号 varchar(20) not null,
+书名 varchar(100) not null,
+作者 nvarchar(50) not null,
+出版者编号 int not null,
+首版年月 datetime not null,
+种类编号 int not null,
+单价 money not null,
+数量 int not null,
+备注 nvarchar(500),
+constraint pk_图书 primary key(书号)
+)
+go
+
+alter table 图书 add foreign key(种类编号) references 图书种类(编号)
+go
+
+create table 借书记录(
+读者卡号 varchar(20) not null,
+图书书号 varchar(20) not null,
+数量 int not null,
+借书日期 datetime default getdate() not null,
+还书日期 datetime,
+状态 nvarchar(20) not null,
+constraint pk_借书记录 primary key(读者卡号,图书书号)
+)
+go
+
+alter table 借书记录 add foreign key(读者卡号) references 读者信息(卡号)
+go
+alter table 借书记录 add foreign key(图书书号) references 图书(书号)
+go
+create table 管理员(
+账号 varchar(20) not null,
+姓名 nvarchar(20) not null,
+密码 varchar(50) not null,
+constraint pk_管理员 primary key(账号) 
+)
+go
+insert into 管理员 values ('admin',N'系统管理员','123456')
+go
